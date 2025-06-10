@@ -13,26 +13,36 @@
     const ws = new WebSocket("ws://localhost:8080/ws");
     const container = document.getElementById("pairs");
 
+    // Render currency pairs
     pairs.forEach(pair => {
+        const safeId = pair.replace("/", "-");
         container.innerHTML += `
-        <div id="${pair}">
+        <div id="${safeId}">
           ${pair} = <span class="rate">--</span>
           <button onclick="subscribe('${pair}')">Subscribe</button>
           <button onclick="unsubscribe('${pair}')">Unsubscribe</button>
         </div>`;
     });
 
+    // Handle WebSocket messages
     ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        document.querySelector(`#${data.pair} .rate`).textContent = data.rate;
+        const safeId = data.pair.replace("/", "-");
+        const rateElement = document.querySelector(`#${safeId} .rate`);
+        if (rateElement) {
+            rateElement.textContent = data.rate;
+        } else {
+            console.warn("Rate element not found for:", data.pair);
+        }
     };
 
+    // Subscribe/Unsubscribe handlers
     function subscribe(pair) {
-        ws.send(JSON.stringify({action: "subscribe", pair}));
+        ws.send(JSON.stringify({ action: "subscribe", pair }));
     }
 
     function unsubscribe(pair) {
-        ws.send(JSON.stringify({action: "unsubscribe", pair}));
+        ws.send(JSON.stringify({ action: "unsubscribe", pair }));
     }
 </script>
 </body>
