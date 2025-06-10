@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Exchange Rates</title>
+</head>
+<body>
+<h1>Exchange Rates</h1>
+<div id="pairs"></div>
+
+<script>
+    const pairs = ["USD/EUR", "USD/GBP", "USD/UAH"];
+    const ws = new WebSocket("ws://localhost:8080/ws");
+    const container = document.getElementById("pairs");
+
+    pairs.forEach(pair => {
+        container.innerHTML += `
+        <div id="${pair}">
+          ${pair} = <span class="rate">--</span>
+          <button onclick="subscribe('${pair}')">Subscribe</button>
+          <button onclick="unsubscribe('${pair}')">Unsubscribe</button>
+        </div>`;
+    });
+
+    ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        document.querySelector(`#${data.pair} .rate`).textContent = data.rate;
+    };
+
+    function subscribe(pair) {
+        ws.send(JSON.stringify({action: "subscribe", pair}));
+    }
+
+    function unsubscribe(pair) {
+        ws.send(JSON.stringify({action: "unsubscribe", pair}));
+    }
+</script>
+</body>
+</html>
