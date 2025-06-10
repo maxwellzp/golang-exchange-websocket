@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func BroadCastLoop() {
+func BroadCastLoop(redisService *redis.Service) {
 	ticker := time.NewTicker(time.Second * 1)
 	defer ticker.Stop()
 
@@ -15,7 +15,7 @@ func BroadCastLoop() {
 		mu.Lock()
 		for client := range clients {
 			for pair := range client.Pairs {
-				rate, err := redis.GetRate(pair)
+				rate, err := redisService.GetRate(pair)
 				if err != nil {
 					log.Printf("Error getting rate for %s: %v", pair, err)
 					continue
@@ -31,6 +31,7 @@ func BroadCastLoop() {
 					continue
 				}
 
+				// Only one goroutine writes to the WebSocket connection at a time.
 				client.Mutex.Lock()
 				err = client.Conn.WriteMessage(1, dataMsg)
 				client.Mutex.Unlock()

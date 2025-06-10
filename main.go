@@ -8,10 +8,13 @@ import (
 )
 
 func main() {
-	redis.Init()
-	go websocket.BroadCastLoop()
+	redisService := redis.NewService("redis:6379")
+	go websocket.BroadCastLoop(redisService)
 
-	http.HandleFunc("/ws", websocket.HandleWebsocket)
+	//http.HandleFunc("/ws", websocket.HandleWebsocket)
+	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		websocket.HandleWebsocket(w, r, redisService)
+	})
 	http.Handle("/", http.FileServer(http.Dir("./static")))
 
 	log.Printf("Listening on port 8080")

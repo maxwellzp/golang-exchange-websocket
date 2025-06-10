@@ -2,6 +2,7 @@ package websocket
 
 import (
 	"github.com/gorilla/websocket"
+	"golang-exchange-websocket/redis"
 	"log"
 	"net/http"
 	"sync"
@@ -24,7 +25,7 @@ var (
 	mu       sync.Mutex
 )
 
-func HandleWebsocket(w http.ResponseWriter, r *http.Request) {
+func HandleWebsocket(w http.ResponseWriter, r *http.Request, redisService *redis.Service) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		http.Error(w, "Could not open websocket", http.StatusBadRequest)
